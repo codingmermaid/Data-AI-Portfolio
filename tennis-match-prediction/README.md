@@ -12,6 +12,14 @@ Wimbledon quarter-final (7 July 2026).
 > Interestingly, backfilling the live 2026 season *strengthened* Djokovic's
 > case (the stale-data version said 61.6%): Auger-Aliassime's raw 2026 form is
 > weaker than his 3-seed suggests, while Djokovic's grass rating held.
+>
+> **Outcome: prediction correct ✅ — Djokovic won 3–2 on 7 July 2026.** A
+> five-setter is exactly what a well-calibrated 67/33 edge should look like.
+>
+> **Next up (semifinal): the model picks Jannik Sinner over Djokovic, 66.5%.**
+> Sinner's overall Elo is a monstrous 2387 with 96% form over his last 25 —
+> but grass is the one surface where Djokovic still out-rates him
+> (2206 vs 2087), which keeps him in it.
 
 ## Workflow
 
