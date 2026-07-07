@@ -14,12 +14,16 @@ Wimbledon quarter-final (7 July 2026).
 > weaker than his 3-seed suggests, while Djokovic's grass rating held.
 >
 > **Outcome: prediction correct ✅ — Djokovic won 3–2 on 7 July 2026.** A
-> five-setter is exactly what a well-calibrated 67/33 edge should look like.
+> five-setter is exactly what a well-calibrated two-in-three edge should
+> look like.
 >
-> **Next up (semifinal): the model picks Jannik Sinner over Djokovic, 66.5%.**
-> Sinner's overall Elo is a monstrous 2387 with 96% form over his last 25 —
-> but grass is the one surface where Djokovic still out-rates him
-> (2206 vs 2087), which keeps him in it.
+> **Next up — semifinal, Djokovic vs Sinner. The model picks SINNER:**
+> P(Sinner) = 66.5%, P(Djokovic) = 33.5%. Yes, the winning probability is
+> nearly the same number as the quarter-final (66.8%) — pure coincidence,
+> and this time it sits on the *other* side: Djokovic is now the underdog.
+> Sinner's overall Elo (2387 vs 2188) and 96% form over his last 25 matches
+> dominate; grass is the one surface where Djokovic still out-rates him
+> (2206 vs 2087), which is what keeps him at one-in-three.
 
 ## Workflow
 

@@ -86,7 +86,9 @@ def main():
     print(f"head-to-head {args.p1} {h2h[0]} - {h2h[1]} {args.p2}")
     print("-" * 60)
     print(f"P({args.p1} wins) = {p1_win:.1%}")
-    print(f"P({args.p2} wins) = {1 - p1_win:.1%}\n")
+    print(f"P({args.p2} wins) = {1 - p1_win:.1%}")
+    fav, prob = (args.p1, p1_win) if p1_win >= 0.5 else (args.p2, 1 - p1_win)
+    print(f">>> model favours: {fav.upper()} ({prob:.1%})\n")
 
 
 if __name__ == "__main__":
