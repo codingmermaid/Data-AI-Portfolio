@@ -40,14 +40,24 @@ COLUMNS = ["tourney_id", "tourney_name", "surface", "tourney_level", "indoor",
            "loser_ht", "score", "best_of", "round"]
 
 
-def call(method: str, key: str, **params) -> list[dict]:
+def call(method: str, key: str, retries: int = 3, **params) -> list[dict]:
+    """GET with retries - the API intermittently returns 500s."""
     params = {"method": method, "APIkey": key, **params}
-    r = requests.get(BASE, params=params, timeout=30)
-    r.raise_for_status()
-    payload = r.json()
-    if int(payload.get("success", 0)) != 1:
-        raise RuntimeError(f"{method} failed: {payload}")
-    return payload.get("result", [])
+    for attempt in range(retries + 1):
+        try:
+            r = requests.get(BASE, params=params, timeout=30)
+            r.raise_for_status()
+            payload = r.json()
+            if int(payload.get("success", 0)) != 1:
+                raise RuntimeError(f"{method} failed: {str(payload)[:200]}")
+            return payload.get("result", [])
+        except (requests.RequestException, ValueError, RuntimeError):
+            if attempt == retries:
+                raise
+            wait = 2 ** (attempt + 1)
+            print(f"    {method} error, retrying in {wait}s ...")
+            time.sleep(wait)
+    return []  # unreachable
 
 
 def tournament_surfaces(key: str) -> dict[str, str]:
@@ -78,15 +88,38 @@ def infer_surface(name: str, when: date) -> str:
     return "Hard"
 
 
+def fetch_range(key: str, d: date, d2: date) -> list[dict]:
+    """One get_fixtures window; if the API 500s even after retries,
+    split the window day-by-day and skip only the days that still fail."""
+    try:
+        return call("get_fixtures", key, date_start=d.isoformat(),
+                    date_stop=d2.isoformat(), timezone="UTC")
+    except Exception:
+        print(f"    window {d}..{d2} failing - fetching day by day")
+        events = []
+        day = d
+        while day <= d2:
+            try:
+                events += call("get_fixtures", key, date_start=day.isoformat(),
+                               date_stop=day.isoformat(), timezone="UTC")
+            except Exception as e:
+                print(f"    SKIPPED {day}: {e}")
+            day += timedelta(days=1)
+            time.sleep(0.4)
+        return events
+
+
 def fetch(key: str, start: date, stop: date) -> pd.DataFrame:
-    surf_map = tournament_surfaces(key)
+    try:
+        surf_map = tournament_surfaces(key)
+    except Exception as e:
+        print(f"  get_tournaments unavailable ({e}); inferring surfaces by name/date")
+        surf_map = {}
     rows, chunk = [], timedelta(days=13)
     d = start
     while d <= stop:
         d2 = min(d + chunk, stop)
-        events = call("get_fixtures", key,
-                      date_start=d.isoformat(), date_stop=d2.isoformat(),
-                      timezone="UTC")
+        events = fetch_range(key, d, d2)
         for e in events:
             if "atp" not in str(e.get("event_type_type", "")).lower():
                 continue
