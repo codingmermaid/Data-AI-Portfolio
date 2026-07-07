@@ -43,7 +43,12 @@ def load_matches() -> pd.DataFrame:
         raise FileNotFoundError(
             f"No data in {DATA_DIR}. Run data/download_data.sh first."
         )
+    supplement = os.path.join(DATA_DIR, "api_supplement.csv")
+    if os.path.exists(supplement):
+        files.append(supplement)
     df = pd.concat((pd.read_csv(f) for f in files), ignore_index=True)
+    # The API supplement can overlap the yearly CSVs (e.g. January events).
+    df = df.drop_duplicates(subset=["tourney_date", "winner_name", "loser_name"])
     df = df[df["tourney_level"].astype(str).isin(LEVELS)]
     df = df[~df["score"].astype(str).str.contains("W/O|DEF|ABN", na=False)]
     df = df.dropna(subset=["winner_name", "loser_name", "surface"])

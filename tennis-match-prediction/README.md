@@ -32,18 +32,43 @@ src/predict.py                 4. PREDICT: snapshot current ratings, score the
                                   matchup (surface, format, ranks as inputs).
 ```
 
-## Reproduce
+## Run locally (VS Code)
 
 ```bash
+cd tennis-match-prediction
+python -m venv .venv
+source .venv/bin/activate         # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-bash data/download_data.sh        # ~16 MB of CSVs (not committed)
+bash data/download_data.sh        # skip if the data/ CSVs came with your download
 python src/train.py               # writes outputs/{metrics.json,model.joblib,...}
 python src/predict.py "Novak Djokovic" "Felix Auger-Aliassime" \
     --surface Grass --best-of 5 --p1-rank 7 --p2-rank 3
 ```
 
-Or read the full story with EDA, evaluation, calibration and feature-importance
-plots in [`notebooks/wimbledon_qf_prediction.ipynb`](notebooks/wimbledon_qf_prediction.ipynb).
+In VS Code: open this folder, pick the `.venv` interpreter
+(`Ctrl/Cmd+Shift+P` → *Python: Select Interpreter*), and the notebooks run
+with the built-in Jupyter support.
+
+### Refresh with live data (api-tennis.com)
+
+The CSV feed lags the live season. With an [api-tennis.com](https://api-tennis.com)
+key you can backfill everything since the cutoff:
+
+```bash
+export TENNIS_API_KEY=your_key_here     # never commit the key
+python src/ingest_api.py                # writes data/api_supplement.csv
+python src/train.py                     # ratings + model now include it
+```
+
+`load_matches()` picks the supplement up automatically. Run it from your own
+machine — sandboxed cloud environments may block the API host.
+
+## Notebooks
+
+| notebook | contents |
+|---|---|
+| [`notebooks/wimbledon_qf_prediction.ipynb`](notebooks/wimbledon_qf_prediction.ipynb) | the story end-to-end: workflow, modeling, the QF prediction |
+| [`notebooks/eda_and_results.ipynb`](notebooks/eda_and_results.ipynb) | deeper preprocessing/EDA: missing data, coverage, upset rates, career Elo trajectories, feature separation/correlation, calibration, importance, final prediction |
 
 ## Data
 

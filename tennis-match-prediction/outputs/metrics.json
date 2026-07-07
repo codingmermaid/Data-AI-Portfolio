@@ -5,31 +5,31 @@
     "test": "2024-2026"
   },
   "validation_log_loss": {
-    "logistic_regression": 0.6191,
-    "hist_gradient_boosting": 0.6188
+    "logistic_regression": 0.6193,
+    "hist_gradient_boosting": 0.6184
   },
   "selected_model": "hist_gradient_boosting",
   "test": [
     {
       "model": "baseline_higher_rank",
-      "n": 4732,
-      "accuracy": 0.6367,
-      "log_loss": 13.0936,
-      "roc_auc": 0.6368
+      "n": 4728,
+      "accuracy": 0.6364,
+      "log_loss": 13.1047,
+      "roc_auc": 0.6364
     },
     {
       "model": "baseline_elo_only",
-      "n": 4732,
-      "accuracy": 0.6369,
-      "log_loss": 0.6378,
-      "roc_auc": 0.6955
+      "n": 4728,
+      "accuracy": 0.6371,
+      "log_loss": 0.6379,
+      "roc_auc": 0.6954
     },
     {
       "model": "hist_gradient_boosting",
-      "n": 4732,
-      "accuracy": 0.6407,
-      "log_loss": 0.6213,
-      "roc_auc": 0.7067
+      "n": 4728,
+      "accuracy": 0.6419,
+      "log_loss": 0.6204,
+      "roc_auc": 0.7075
     }
   ]
 }
