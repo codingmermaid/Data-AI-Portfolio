@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import glob
 import os
+import re
 from collections import defaultdict, deque
 
 import numpy as np
@@ -36,6 +37,57 @@ FEATURES = [
 ]
 
 
+_ABBREV = re.compile(r"^(?:[A-Z]\.\s*)+")  # "N. Djokovic", "J.L. Struff", ...
+
+
+def _norm(s: str) -> str:
+    return s.strip().lower().replace("-", " ")
+
+
+def _normalize_api_names(supp: pd.DataFrame, hist: pd.DataFrame) -> pd.DataFrame:
+    """Map the API's abbreviated names ('N. Djokovic') onto the historical
+    full names ('Novak Djokovic') so the supplement updates the same players'
+    ratings. Keys are (first initial, surname), with first/last-token
+    fallbacks for middle-name mismatches ('T. A. Tirante' vs 'Thiago Agustin
+    Tirante'). Collisions resolve to the player with more matches; unmatched
+    names (true newcomers) keep the API form."""
+    counts = pd.concat([hist["winner_name"], hist["loser_name"]]).value_counts()
+    lookup: dict = {}
+
+    def index(key, full, n):
+        if key[1] and (key not in lookup or n > lookup[key][1]):
+            lookup[key] = (full, n)
+
+    for full, n in counts.items():
+        parts = str(full).split(" ", 1)
+        if len(parts) < 2 or not parts[0]:
+            continue
+        initial, surname = parts[0][0].upper(), _norm(parts[1])
+        tokens = surname.split()
+        index((initial, surname), full, n)
+        index((initial, tokens[-1]), full, n)
+        index((initial, tokens[0]), full, n)
+
+    def fix(name):
+        if not isinstance(name, str):
+            return name
+        m = _ABBREV.match(name)
+        if not m:
+            return name
+        surname = _norm(name[m.end():])
+        tokens = surname.split()
+        for key in ((name[0], surname), (name[0], tokens[-1]), (name[0], tokens[0])):
+            hit = lookup.get((key[0].upper(), key[1]))
+            if hit:
+                return hit[0]
+        return name
+
+    supp = supp.copy()
+    supp["winner_name"] = supp["winner_name"].map(fix)
+    supp["loser_name"] = supp["loser_name"].map(fix)
+    return supp
+
+
 def load_matches() -> pd.DataFrame:
     """Load all yearly CSVs, keep completed tour-level matches, sort by date."""
     files = sorted(glob.glob(os.path.join(DATA_DIR, "[12][0-9][0-9][0-9].csv")))
@@ -43,10 +95,11 @@ def load_matches() -> pd.DataFrame:
         raise FileNotFoundError(
             f"No data in {DATA_DIR}. Run data/download_data.sh first."
         )
+    df = pd.concat((pd.read_csv(f) for f in files), ignore_index=True)
     supplement = os.path.join(DATA_DIR, "api_supplement.csv")
     if os.path.exists(supplement):
-        files.append(supplement)
-    df = pd.concat((pd.read_csv(f) for f in files), ignore_index=True)
+        supp = _normalize_api_names(pd.read_csv(supplement), df)
+        df = pd.concat([df, supp], ignore_index=True)
     # The API supplement can overlap the yearly CSVs (e.g. January events).
     df = df.drop_duplicates(subset=["tourney_date", "winner_name", "loser_name"])
     df = df[df["tourney_level"].astype(str).isin(LEVELS)]

@@ -4,11 +4,14 @@ End-to-end ML project that predicts the winner of an ATP tennis match from
 historical results, applied to the **Novak Djokovic vs Felix Auger-Aliassime**
 Wimbledon quarter-final (7 July 2026).
 
-> **Result: the model gives Djokovic a 61.6% win probability**, driven by his
-> overall Elo (2215 vs 2012) and a large grass-Elo gap (2197 vs 1674).
-> Test-set performance: **64.1% accuracy / 0.621 log-loss / 0.707 ROC-AUC**
-> on ~4.7k unseen 2024–26 matches — better than Elo-only (63.7% / 0.638) and
-> higher-rank (63.7%) baselines.
+> **Result: the model gives Djokovic a 66.8% win probability** (with live data
+> through 6 July 2026), driven by his overall Elo (2184 vs 2007) and a large
+> grass-Elo gap (2203 vs 1779). Test-set performance: **63.7% accuracy /
+> 0.624 log-loss / 0.701 ROC-AUC** on ~6.2k unseen 2024–26 matches — better
+> than Elo-only (63.2% / 0.641) and higher-rank (60.4%) baselines.
+> Interestingly, backfilling the live 2026 season *strengthened* Djokovic's
+> case (the stale-data version said 61.6%): Auger-Aliassime's raw 2026 form is
+> weaker than his 3-seed suggests, while Djokovic's grass rating held.
 
 ## Workflow
 
@@ -77,10 +80,12 @@ machine — sandboxed cloud environments may block the API host.
   Sackmann's well-known `tennis_atp` dataset (which was unreachable at build time).
 - **Scope**: completed tour-level matches (Slams, Masters, 500s, 250s, Finals);
   Davis Cup and walkovers excluded.
-- **Known gap**: the feed lags the live season — 2026 coverage stops in January,
-  so both players' 2026 form (including their four wins at this Wimbledon) is not
-  in the features. That most likely overstates Djokovic's edge, since
-  Auger-Aliassime's strong 2026 season is what made him the 3-seed.
+- **Live supplement**: the yearly CSVs lag the live season (2026 stops in
+  January), so `src/ingest_api.py` backfills Feb–Jul 2026 from api-tennis.com
+  into `data/api_supplement.csv`, with abbreviated API names ("N. Djokovic")
+  normalized onto the historical full names at load time.
+- **Known gap**: the Jan 19–31 2026 Australian Open window falls between the
+  two sources (rerun ingest with `--start 2026-01-15` to close it).
 
 ## Features (all as player1 − player2 differences)
 

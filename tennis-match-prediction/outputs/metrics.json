@@ -12,24 +12,24 @@
   "test": [
     {
       "model": "baseline_higher_rank",
-      "n": 4728,
-      "accuracy": 0.6364,
-      "log_loss": 13.1047,
-      "roc_auc": 0.6364
+      "n": 6223,
+      "accuracy": 0.6039,
+      "log_loss": 14.2773,
+      "roc_auc": 0.6034
     },
     {
       "model": "baseline_elo_only",
-      "n": 4728,
-      "accuracy": 0.6371,
-      "log_loss": 0.6379,
-      "roc_auc": 0.6954
+      "n": 6223,
+      "accuracy": 0.6318,
+      "log_loss": 0.6411,
+      "roc_auc": 0.6904
     },
     {
       "model": "hist_gradient_boosting",
-      "n": 4728,
-      "accuracy": 0.6419,
-      "log_loss": 0.6204,
-      "roc_auc": 0.7075
+      "n": 6223,
+      "accuracy": 0.637,
+      "log_loss": 0.6243,
+      "roc_auc": 0.7012
     }
   ]
 }
