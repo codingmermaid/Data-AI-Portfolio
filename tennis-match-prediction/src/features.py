@@ -30,6 +30,7 @@ FEATURES = [
     "form_diff",         # win rate over last 25 matches, p1 - p2
     "grass_wr_diff",     # career win rate on today's surface, p1 - p2
     "h2h_diff",          # head-to-head wins, p1 - p2
+    "surface_h2h_diff",  # head-to-head wins on today's surface, p1 - p2
     "rank_diff",         # log2(p2_rank) - log2(p1_rank)  (positive = p1 better)
     "age_diff",          # p1 - p2, years
     "ht_diff",           # p1 - p2, cm
@@ -131,6 +132,7 @@ class PlayerBook:
         self.recent = defaultdict(_recent_window)  # 1 = win
         self.surface_w = {s: defaultdict(int) for s in SURFACES}
         self.h2h = defaultdict(int)  # (a, b) -> wins of a over b
+        self.h2h_surface = defaultdict(int)  # (a, b, surface) -> wins
 
     @staticmethod
     def _k(n_played: int, slam: bool) -> float:
@@ -169,9 +171,11 @@ class PlayerBook:
             self.recent[p].append(won)
         self.surface_w[surface][winner] += 1
         self.h2h[(winner, loser)] += 1
+        self.h2h_surface[(winner, loser, surface)] += 1
 
 
 def _feature_row(a: dict, b: dict, h2h_ab: int, h2h_ba: int,
+                 sh2h_ab: int, sh2h_ba: int,
                  rank_a, rank_b, age_a, age_b, ht_a, ht_b,
                  best_of_5: int) -> list:
     def log_rank(r):
@@ -183,6 +187,7 @@ def _feature_row(a: dict, b: dict, h2h_ab: int, h2h_ba: int,
         a["form"] - b["form"],
         a["surface_wr"] - b["surface_wr"],
         h2h_ab - h2h_ba,
+        sh2h_ab - sh2h_ba,
         log_rank(rank_b) - log_rank(rank_a),
         (age_a - age_b) if pd.notna(age_a) and pd.notna(age_b) else 0.0,
         (ht_a - ht_b) if pd.notna(ht_a) and pd.notna(ht_b) else 0.0,
@@ -216,12 +221,16 @@ def build_dataset(min_prior_matches: int = 10, seed: int = 7):
             winner_first = bool(rng.integers(0, 2))
             if winner_first:
                 row = _feature_row(sw, sl, book.h2h[(w, l)], book.h2h[(l, w)],
+                                   book.h2h_surface[(w, l, surface)],
+                                   book.h2h_surface[(l, w, surface)],
                                    m.winner_rank, m.loser_rank,
                                    m.winner_age, m.loser_age,
                                    m.winner_ht, m.loser_ht, bo5)
                 labels.append(1)
             else:
                 row = _feature_row(sl, sw, book.h2h[(l, w)], book.h2h[(w, l)],
+                                   book.h2h_surface[(l, w, surface)],
+                                   book.h2h_surface[(w, l, surface)],
                                    m.loser_rank, m.winner_rank,
                                    m.loser_age, m.winner_age,
                                    m.loser_ht, m.winner_ht, bo5)

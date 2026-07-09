@@ -6,7 +6,7 @@
   },
   "validation_log_loss": {
     "logistic_regression": 0.6193,
-    "hist_gradient_boosting": 0.6184
+    "hist_gradient_boosting": 0.6179
   },
   "selected_model": "hist_gradient_boosting",
   "test": [
@@ -27,9 +27,9 @@
     {
       "model": "hist_gradient_boosting",
       "n": 6225,
-      "accuracy": 0.6371,
-      "log_loss": 0.6241,
-      "roc_auc": 0.7014
+      "accuracy": 0.6361,
+      "log_loss": 0.6244,
+      "roc_auc": 0.7012
     }
   ]
 }

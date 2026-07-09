@@ -69,6 +69,8 @@ def main():
         s1["form"] - s2["form"],
         s1["surface_wr"] - s2["surface_wr"],
         book.h2h[(args.p1, args.p2)] - book.h2h[(args.p2, args.p1)],
+        book.h2h_surface[(args.p1, args.p2, args.surface)]
+        - book.h2h_surface[(args.p2, args.p1, args.surface)],
         log_rank(rank2) - log_rank(rank1),
         age1 - age2,
         ht1 - ht2,
